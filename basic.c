@@ -170,8 +170,8 @@
 
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 /* how are we coding this? (choose posix/arduino) */
-//#define posix
-#define arduino
+#define posix
+//#define arduino
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 
 
@@ -2116,7 +2116,7 @@ int res=0, cnt=0;
 /* ******** */
 int fileread(char line[]) {
 char *p; char temp[MAXLINE]={}, ch;
-int res=0, cnt=0, eof=0;
+int res=0, cnt=0;
 
 #ifdef arduino
     if (sdFile == NULL) {
