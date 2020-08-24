@@ -135,7 +135,7 @@
 
   *flist				List a file on the drive, no change to local memory.
 
-  **slist				List a file to Serial Port #1 (printer etc).
+  **slist				List the program in memory to Serial Port #1 (printer etc).
 
   *delete               Delete a file
   
