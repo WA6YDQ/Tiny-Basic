@@ -1,0 +1,112 @@
+This program (mostly) conforms to the original tiny basic 
+written in the 1970's for the Altair et al. I made a few 
+changes to be more useful on the Arduino and other small
+controllers (teensy etc). 
+
+This is tested on linux and the Arduino Due. While it
+should run on others, I have not tested it on them.
+
+Below are some examples of the commands (in addition to 
+the files in the examples directory) that show usage.
+
+LET
+
+10 let a=1
+20 let b=a*10
+30 let c=a*b/3+4
+40 let a=a+1
+
+DIM/array
+
+10 dim 50
+20 for n=0 to 40
+30 let @(n)=n
+40 next n
+50 for a=0 to 40
+60 print @(a)
+70 next a
+
+GOTO/GOSUB/RETURN
+10 let a=0
+20 print "a=";a
+30 let a=a+1
+40 if a=20 gosub 100
+50 if a=30 stop
+60 goto 20
+100 print "a=20:";a
+110 return
+
+PRINT/INPUT
+10 print "starting"
+20 input "Enter a ",a
+30 print "number is ";a
+40 rem print horiz
+50 for n=1 to 10
+60 print n,;
+70 next n
+
+
+FILE OPERATIONS
+10 rem open a file for writing
+20 fileopen data.txt w
+25 rem assign a counter
+30 let c=1
+40 rem read analog values in pin A2
+50 let r=pinread(A2)
+55 rem save to file
+60 filewrite r
+70 delay 1000
+80 let c=c+1
+90 if c<100 then 50
+100 rem done - close the file
+110 fileclose
+120 rem now read back the data
+130 fileopen data.txt r
+140 rem read the file until it returns 0 (EOF)
+150 fileread a
+160 if a=0 goto 200
+170 print "value = ",a
+180 goto 150
+200 fileclose
+210 print "done"
+220 end
+
+NOTES:
+Only 1 iteration for for/next is allowed. Expressions
+can be used for the loop variables:
+
+10 let a=5
+20 for c=a to 20 step a/2
+30 next c
+
+This version of BASIC is integer only. On the Arduino it is
+signed 32 bits.
+
+There is a single integer array variable named @ (after tiny basic).
+Usage is @(n) where n < the DIM varaible:
+
+10 dim 100
+20 for n=0 to 100
+30 print @(n)
+40 next n
+50 print @(15)
+
+Filepointers and variables are cleared at runtime. The CLEAR statement
+will clear (set to 0) all variables and DIM statements.
+
+MEMORY USAGE
+The default is 16384 lines for the Arduino set up in line (appx) 206.
+If you need more lines, and are OK with a smaller array size, lower 
+the ARRAYMAX variable and raise the BUFSIZE value. The array, being 
+a 32 bit integer takes 4 bytes per index value.
+
+For a posix system there really are no limits.
+
+Line numbers MUST be used, and the line number max is set in 
+line (appx) 213. 
+
+You can change defines up to line 216 but everything below that is
+needed and will cause problems.
+
+-kurt
+
