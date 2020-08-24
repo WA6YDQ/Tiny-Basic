@@ -14,6 +14,9 @@
   and upload this program. 
   First rename basic.c to basic.ino to keep the IDE happy.
 
+  NOTE: for the Arduino Due, an SD card is required to use 
+  the file commands. The select pin is set on line 332. You
+  will need to set it to the select pin you use.
    
   To run on a posix (linux) machine:
   basic [filename] where filename is an optional 
