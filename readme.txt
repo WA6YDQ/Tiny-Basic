@@ -4,6 +4,9 @@
   for both posix systems and the Arduino Due. It should
   work on anything with a command line and a c compiler.
 
+  First, select the #define (line appx 174) for the 
+  system to use (posix/arduino).
+
   For posix systems (linux etc):
   compile with: cc -o basic basic.c -Wall
  
