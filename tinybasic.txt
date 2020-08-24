@@ -108,5 +108,57 @@ line (appx) 213.
 You can change defines up to line 216 but everything below that is
 needed and will cause problems.
 
+HARDWARE
+For the Arduino due, the following allow access to digital and analog hardware:
+
+PINSET [pin number] where pin number is a digital pin value. This can 
+be a variable. This is a program statement and can only be used from a running
+program - not from the command line. When called, BASIC will set the pin to OUTPUT
+and set the pin to HIGH (1).
+
+PINCLR [pin number] where pin number is a digital pin value. Same as above,
+but the pin will be cleared (LO, 0).
+
+You can read the value of a pin with PINREAD(n) where n is a variable or pin
+number. When called, the pin will be set to INPUT with pullups enabled.
+PINREAD returns an integer 1 or 0. The pin will stay in input mode with
+pullups enabled for the life of the program.
+
+Also, using A0-A11 as the variable for pinread you can read a 16 bit analog
+value from the pin (0-65535). 
+
+For the Arduino, DELAY value is a millisecond delay. 
+DELAY 200 is a 200 msec delay.
+
+For posix systems, use sleep. Note that sleep is in seconds, not msec.
+
+MISC
+Everything following a rem statement is ignored until a newline.
+
+There is a simple line editor at the OK> prompt. If you need to 
+edit a line, just retype it. A line number by itself deletes an 
+existing line.
+
+The program expects an SD card. I use an Adafruit sd card for SPI.
+You can LOAD/SAVE [filename] the buffer contents to it with the 
+load and save commands. 
+DIR shows the current directory contents. 
+
+If using a posix system these commands act on the current filesystem.
+
+TRACE and DUMP are mostly for debugging on my part.
+
+Exit for the arduino is unused, but quits the program for posix.
+
+SIZE/MEM shows (approximate) memory usage for the arduino due.
+On posix it shows free basic storage only.
+
+FLIST gives a file listing w/o affecting the current buffer.
+
+SLIST (arduino due ONLY) sends the output of the buffer to Serial port 1
+(serial list). Useful if you have a printer or other device attached to
+port 1. Speed is set up in setup() at about line 430.
+
+
 -kurt
 
