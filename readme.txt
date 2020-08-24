@@ -88,7 +88,7 @@
   Logical comparisons (logical):
   The following symbols are used in the IF statement to compare 2 values:
   =  lvalue is equal to rvalue
-  #	 lvalue is not equal to rvalue
+  #  lvalue is not equal to rvalue
   <  lvalue is less than rvalue
   >  lvalue is greater than rvalue
   &  lvalue logical and with rvalue
