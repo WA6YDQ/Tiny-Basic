@@ -15,7 +15,7 @@
   First rename basic.c to basic.ino to keep the IDE happy.
 
   NOTE: for the Arduino Due, an SD card is required to use 
-  the file commands. The select pin is set on line 332. You
+  the file commands. The select pin is set on line 211. You
   will need to set it to the select pin you use.
    
   To run on a posix (linux) machine:
@@ -35,7 +35,7 @@
 
   This program is licensed under the GNU 3.0 license
 
-  -----------------------------------------------------------------
+  ----------------------------------------------------
 
   NOTE: Although statements, expressions and functions 
   appear in UPPER CASE, the basic lines entered are converted 
@@ -43,7 +43,7 @@
   case in your statements. Characters between double quotes ("") 
   or parens () are NOT converted.
 
-  -----------------------------------------------------------------
+  -----------------------------------------------------
 
   These are the statements that this version of basic 
   recognizes:
@@ -113,7 +113,7 @@
   RANDOM()				random number between 0 and 2^32/2 -1
 
   Functions return a numeric integer value 
-  ------------------------------------------------------------------------
+  --------------------------------------------------
 
   Line numbers MUST be used, and be in the range of 1 thru 32767.
   Lines may be blank (newline terminated). However, the basic 
@@ -133,7 +133,7 @@
   (ie. 10 let a=5, b=a*20/3, c=a*b/2) but can use comma seperators
   and spaces between commas and the next assignment.
 
-  -------------------------------------------------------------------------
+  ------------------------------------------------------
 
   *** Commands ***
   
