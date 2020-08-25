@@ -23,6 +23,11 @@
   cable to the usb port closest to the power jack. Terminal defaults
   to 9600/8/N/1 and vt100/vt102. Putty, minicom, etc should work.
 
+  The Arduino Due requires an SD card for the file commands to work.
+  I use the Adafruit SD card using SPI. The chip select #define is on
+  line 214 of this file. It must be set to the pin number you use on 
+  your board setup.
+
   -----------------------------------------------------------------
 
   NOTE: Although statements, expressions and functions appear in UPPER CASE,
@@ -124,6 +129,8 @@
 
   list					Display the basic program in memory.
 
+  cls                   Clear the display
+
   size/mem				Show free (unused) memory.
 
   *load [filename]		Load the file 'filename' into memory clearing out any 
@@ -165,6 +172,16 @@
   msec posix delays 
   goto/gosub to a variable
 
+
+  *****                     *****
+  ***** Version Information *****
+  *****                     *****
+
+  ver 0.52	change size of basic ram for arduino, 
+  remove \n from run at start, added cls command
+  ver 0.51	2E5 and 2e5 equiv (linetolower() caused issue)
+  ver 0.50  moved from alpha to beta, released to the wild 
+
 */
 
 
@@ -203,7 +220,7 @@
 #endif
 
 #ifdef arduino
-#define BUFSIZE 16384		// ram buffer memory (arduino) for basic statements (appx 23 bytes/line)
+#define BUFSIZE 32768		// ram buffer memory (arduino) for basic statements (appx 23 bytes/line)
 #define ARRAYMAX 12032      // max size of @() array (4 bytes/element)
 // NOTE: If you need more program size, adjust array size down so that you have 1024 bytes on top
 // 16384 + (12032 * 4) + 1024 = 65536  (every byte of buffer = 4 bytes of array)
@@ -493,7 +510,7 @@ char *p;
         #endif
         
         #ifdef arduino
-        while(1);
+        while(1);   // wait for reset
         #endif
 	}
 
@@ -567,7 +584,16 @@ char *p;
 			}
 			continue;
 		}
-		
+
+        /* clear the display */
+        if (strncmp(line,"cls",3)==0) {
+            #ifdef arduino
+            Serial.println("\e[H\e[J");
+            #endif
+            continue;
+        }
+
+        
 		/* list - display basic listing in buffer */
 		if (strncmp(line,"list",4)==0) {
 			list(line);
@@ -1161,8 +1187,8 @@ char cmd[10]={}, filename[32]={};
 /* convert line to lower case */
 /* ************************** */
 void linetolower(char *line) {
-char temp[strlen(line)+5];
-int FLAG=1;
+char temp[strlen(line)+5];		// note: issue w/E being changed to e (2E5 now 2e5)
+int FLAG=1;						// currently not a critical issue.
 	FLAG=1;
     for (int n=0; n<=strlen(line); n++) {
         if (line[n] == '"' || line[n] == '(' || line[n] == ')')  // ignore quoted text & parens
@@ -1197,7 +1223,7 @@ char basicline[MAXLINE]={}, cmd[6]={};
 int pos=0, n=0; 	// n-local, pos = local position
 int res=0;			// result returned from parse()
 
-    prout("\r\n");
+    //prout("\r\n");
     
 	// test integrity of basic file
 	for (n=0; n<position-1; n++) {
@@ -1923,7 +1949,7 @@ int fileopen(char fname[],char mode[]) {
 		return ERROR_RETURN;
 	}
 	if (mode[0] == 'w' || mode[0] == 'W')
-		diskfile = fopen(fname,"w");
+		diskfile = fopen(fname,"a");
 	else if (mode[0] == 'r' || mode[0] == 'R')
 		diskfile = fopen(fname,"r");
 	else {
@@ -2689,7 +2715,7 @@ int res = 0;
 			return ~lvalue;
 			break;
 		case 'E':	// exponent ie 2E3 = 2*2*2
-        case 'e':
+        case 'e':   // (added because the tolower() changed E to e) (will fix later)
 			//Serial.print("lvalue ");Serial.println(lvalue);
 			res = lvalue;
 			for (int n=1; n < rvalue; n++)
