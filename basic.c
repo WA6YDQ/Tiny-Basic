@@ -170,8 +170,8 @@
 
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 /* how are we coding this? (choose posix/arduino) */
-#define posix
-//#define arduino
+//#define posix
+#define arduino
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 
 
@@ -208,6 +208,7 @@
 // NOTE: If you need more program size, adjust array size down so that you have 1024 bytes on top
 // 16384 + (12032 * 4) + 1024 = 65536  (every byte of buffer = 4 bytes of array)
 #define MAXRAND 2147483647	// 2^32/2-1
+#define SDCARDCS 53			// chip select for the SD card
 #endif
 
 #define MAXLINENUMBER 32767
@@ -329,7 +330,7 @@ FILE *diskfile;		// used for fileopen/close etc
 #ifdef arduino
 File root;          // used in dir
 File sdFile;        // used in save, load
-const int chipSelect = 53;  // SD card chip select
+//const int chipSelect = 53;  // SD card chip select
 
 // used in showmem()
 extern char _end;
@@ -436,7 +437,7 @@ void setup() {
     analogReadResolution(16);
 
     /* set up SD card */
-    if (!SD.begin(chipSelect)) {        // 53 is SD chip select
+    if (!SD.begin(SDCARDCS)) {        // SD chip select in #define above
         Serial.println("SD card init failed!");
         Serial.println("Power down, fix and restart");
         while (1);
@@ -2397,6 +2398,7 @@ int isoperand(char ch) {
 		ch == '|' ||	// or
 		ch == '^' ||	// xor
 		ch == 'E' ||	// exponent ie 2E3 = 2*2*2
+        ch == 'e' ||    // lower case
 		ch == '~' ) 	// compliment
 		return 1;
 	else
@@ -2687,9 +2689,13 @@ int res = 0;
 			return ~lvalue;
 			break;
 		case 'E':	// exponent ie 2E3 = 2*2*2
+        case 'e':
+			//Serial.print("lvalue ");Serial.println(lvalue);
 			res = lvalue;
 			for (int n=1; n < rvalue; n++)
 				res = res * lvalue;
+			//Serial.print("rvalue ");Serial.println(rvalue);
+			//Serial.print("res "); Serial.println(res);
 			return res;
 			break;
 
