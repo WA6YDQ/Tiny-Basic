@@ -1,164 +1,334 @@
-This program (mostly) conforms to the original tiny basic 
-written in the 1970's for the Altair et al. I made a few 
-changes to be more useful on the Arduino and other small
-controllers (teensy etc). 
+--- Tiny Basic Manual ---
 
-This is tested on linux and the Arduino Due. While it
-should run on others, I have not tested it on them.
 
-Below are some examples of the commands (in addition to 
-the files in the examples directory) that show usage.
+BASIC statements and functions
 
-LET
+-------------
+
+DIM/LET
 
 10 let a=1
-20 let b=a*10
-30 let c=a*b/3+4
-40 let a=a+1
+20 let b=7*6
+30 let c=a*b, d=10*a
+40 dim 20
+50 let @(0)=100
+60 let @(1)=a*b
+70 let @(2)=c+d/5
 
-DIM/array
+Let statements are not optional, and must preceed 
+all variable assignments.
 
-10 dim 50
-20 for n=0 to 40
-30 let @(n)=n
-40 next n
-50 for a=0 to 40
-60 print @(a)
-70 next a
+The dim statement is used to allocate memory for
+an integer array. There is only one integer array
+and it begins with @. The index is a number or letter
+variable from 0 thru the dim statement.
 
-GOTO/GOSUB/RETURN
+All integer variables a single letters from a thru z
+and are 32 bit signed. They range from -(2^32/2)-1 thru
++(2^32/2)-1. Array variables have the same range.
+
+NOTE: Integer variables on the Arduino Due and most
+posix systems are 32 bit. There may be posix machines
+with smaller integers. This will define the integer size.
+
+There can be no spaces between the variable letter and
+the '=' and no space between the '=' and the assignment
+variable or number. After an assignment there can be a 
+comma and another assignment.
+
+--------------
+
+EXPRESSIONS
+
+Expressions are math and logic expressions between two
+values seperated by an operand.
+
+----
+NOTE: arithmetic evaluation is left to right - there is NO order
+of presidence. + and - can occur before * and /.
+----
+
+Valid arithmetic operands are:
++	addition
+-	subtraction
+*	multiplication
+/	division
+%	modulo (remainder from division)
+E	exponentiation 
+
+Valid logical operands are:
+&	logical and
+|	logical or
+^	logical xor
+~	logical compliment
+
+Examples:
+
+Ok> 10 let a=10+20
+Ok> 20 let b=50-a
+Ok> 30 let c=a*b
+Ok> 40 let d=a/2
+Ok> 50 print a,b,c,d
+Ok> run
+30   20   600   15
+
+
+
+10 let a=2|1
+20 let b=8&3
+30 let c=15|7
+40 let d=15&6
+50 print a,b,c,d
+Ok> run
+3   0   15   6
+
+
 10 let a=0
-20 print "a=";a
-30 let a=a+1
-40 if a=20 gosub 100
-50 if a=30 stop
-60 goto 20
-100 print "a=20:";a
+20 let a=a~1
+30 print a
+Ok> run
+-1
+
+
+Ok> 10 let a=2E5
+Ok> 20 print a, 2e5
+Ok> run
+32   32
+
+
+---------------------
+PRINT and INPUT
+
+The PRINT statement sends the values of variables, expressions 
+and strings to your output device (stdout, serial out etc).
+
+PRINT recognizes the following:
+variables a-z
+integer arrays @()
+double quotes for strings: "this is a string"
+commas separates output by 3 spaces: a,b,123
+semi-colons prevents line feeds: 10 print a,b;
+PRINT also recognizes expressions:
+10 PRINT 123*456, a*260+c, 2^8
+
+The INPUT statement reads from the input device into a variable.
+INPUT recognizes the following:
+double quotes for printed strings (prompts): "this is a string"
+commas: separates variables and strings
+variables a-z
+10 INPUT "enter a number ",a
+Note that array variables cannot be input to.
+
+-----------------------
+GOTO/GOSUB/RETURN
+
+The GOTO statement transfers execution to another line.
+10 GOTO 100
+will continue execution at line 100
+
+The GOSUB statement jumps to another line (like the
+GOTO statement) but stores the current address + 1 to the 
+stack. The RETURN statement pulls the address from the stack
+and returns to the statement following the GOSUB statement.
+
+10 GOSUB 100
+20 print "done"
+30 end
+100 print a+b
 110 return
 
-PRINT/INPUT
-10 print "starting"
-20 input "Enter a ",a
-30 print "number is ";a
-40 rem print horiz
-50 for n=1 to 10
-60 print n,;
-70 next n
+The stack is 10 levels deep. 
+
+-----------------------
+STOP/END/EXIT
+
+The END statement ends program execution.
+
+The STOP statement stops program execution
+(future addition of a CONT statement will allow 
+execution following the STOP statement).
+
+The EXIT statement (posix only; not valid for Arduino)
+exits the basic interpreter and returns control to the
+operating system.
+
+---------------------------
+FOR/TO/STEP/NEXT
+
+The FOR statement starts a program loop using a variable 
+as a counter:
+
+10 FOR a=1 TO 100 STEP 5
+20 print a, a*a
+30 NEXT a
+
+The STEP keyword is optional. The variable must be 
+in the range of [a-z]. 
+
+You can also count backwards:
+10 FOR a=100 TO 1 STEP -1
+
+Variables can be used in the TO and STEP positions:
+10 FOR a=b TO c STEP d
+20 NEXT a
 
 
-FILE OPERATIONS
-10 rem open a file for writing
-20 fileopen data.txt w
-25 rem assign a counter
-30 let c=1
-40 rem read analog values in pin A2
-50 let r=pinread(A2)
-55 rem save to file
-60 filewrite r
-70 delay 1000
-80 let c=c+1
-90 if c<100 then 50
-100 rem done - close the file
-110 fileclose
-120 rem now read back the data
-130 fileopen data.txt r
-140 rem read the file until it returns 0 (EOF)
-150 fileread a
-160 if a=0 goto 200
-170 print "value = ",a
-180 goto 150
-200 fileclose
-210 print "done"
-220 end
+---------------------------
+IF/THEN
 
-NOTES:
-Only 1 iteration for for/next is allowed. Expressions
-can be used for the loop variables:
+The IF statement performs a logical test with the result
+being true or false (1/0).
 
-10 let a=5
-20 for c=a to 20 step a/2
-30 next c
+The statement following the IF performs the following:
 
-This version of BASIC is integer only. On the Arduino it is
-signed 32 bits.
+THEN 100	transfers program execution to line 100 following a 
+true evaluation
 
-There is a single integer array variable named @ (after tiny basic).
-Usage is @(n) where n < the DIM varaible:
+GOTO 200 	transfers program execution to line 200 following
+a true evaluation
 
-10 dim 100
-20 for n=0 to 100
-30 print @(n)
-40 next n
-50 print @(15)
+GOSUB 50	stores the address + 1 to the stack, then jumps to line
+50 following a true evaluation
 
-Filepointers and variables are cleared at runtime. The CLEAR statement
-will clear (set to 0) all variables and DIM statements.
+RETURN		pops the return address off the stack and returns
+execution to this address following a true evaluation.
 
-MEMORY USAGE
-The default is 16384 lines for the Arduino set up in line (appx) 206.
-If you need more lines, and are OK with a smaller array size, lower 
-the ARRAYMAX variable and raise the BUFSIZE value. The array, being 
-a 32 bit integer takes 4 bytes per index value.
+STOP		stops program execution following a true evaluation.
 
-For a posix system there really are no limits.
+Evaluations include the following:
+=	ie a=b	The variables a and b are the same
+#	ie a#b	The variables a and b are not the same
+>	ie a>b	The variable a is greater then b
+<	ie a<b	The variable a is less than b
+&	ie a&b	The logical and of a and b
+|	ie a|b	The logical or of a and b
+^	ie a^b	The logical xor of a and b
 
-Line numbers MUST be used, and the line number max is set in 
-line (appx) 213. 
+Examples:
+10 IF a=b THEN 100
+20 IF a#b GOTO 50
+30 IF a>b GOSUB 200
+40 IF a<b RETURN
+50 IF a>100 STOP
 
-You can change defines up to line 216 but everything below that is
-needed and will cause problems.
+Expressions are evaluated as well:
+10 IF a>100/b+c THEN 200
 
-HARDWARE
-For the Arduino due, the following allow access to digital and analog hardware:
+Note that if you use THEN only a line number can follow.
 
-PINSET [pin number] where pin number is a digital pin value. This can 
-be a variable. This is a program statement and can only be used from a running
-program - not from the command line. When called, BASIC will set the pin to OUTPUT
-and set the pin to HIGH (1).
+------------------
+FILEOPEN/FILECLOSE/FILEREAD/FILEWRITE
 
-PINCLR [pin number] where pin number is a digital pin value. Same as above,
-but the pin will be cleared (LO, 0).
+The FILEOPEN statement opens a file pointer for later use.
+The format is:
+FILEOPEN filename Rr/Ww
 
-You can read the value of a pin with PINREAD(n) where n is a variable or pin
-number. When called, the pin will be set to INPUT with pullups enabled.
-PINREAD returns an integer 1 or 0. The pin will stay in input mode with
-pullups enabled for the life of the program.
+The filename is the name of the file to open on the SD card (arduino)
+or local filesystem (posix). 
 
-Also, using A0-A11 as the variable for pinread you can read a 16 bit analog
-value from the pin (0-65535). 
+r/w sets read (R/r) and write (W/w). If write is selected, the file
+will be appended to (both arduino and posix). If you need to write at the 
+top of a file use a new file or delete the old first.
 
-For the Arduino, DELAY value is a millisecond delay. 
-DELAY 200 is a 200 msec delay.
+The FILECLOSE statement closes a previously open file.
 
-For posix systems, use sleep. Note that sleep is in seconds, not msec.
+The FILEWRITE statement writes strings and variable data
+to an open file. This is useful for data collection.
 
-MISC
-Everything following a rem statement is ignored until a newline.
+Example:
+10 FILEWRITE a,b,c
+20 FILEWRITE "This is a string"
+30 for n=1 to 50
+40 FILEWRITE @(n)
+50 next n
 
-There is a simple line editor at the OK> prompt. If you need to 
-edit a line, just retype it. A line number by itself deletes an 
-existing line.
+The FILEREAD statement reads from a file into a variable:
+10 FILEWRITE a
+20 FILEREAD b
 
-The program expects an SD card. I use an Adafruit sd card for SPI.
-You can LOAD/SAVE [filename] the buffer contents to it with the 
-load and save commands. 
-DIR shows the current directory contents. 
+Line 10 write the value of a to an open file
+Line 20 reads the value into the variable b
 
-If using a posix system these commands act on the current filesystem.
+When the file reaches the end, the variable read by FILEREAD will
+be 0.
 
-TRACE and DUMP are mostly for debugging on my part.
+Example:
+10 FILEOPEN data.txt r
+20 FILEREAD a
+30 IF a=0 then 100
+40 PRINT a
+50 GOTO 20
+100 FILECLOSE
+110 END
 
-Exit for the arduino is unused, but quits the program for posix.
+----------------------------
+SLEEP/DELAY
 
-SIZE/MEM shows (approximate) memory usage for the arduino due.
-On posix it shows free basic storage only.
+SLEEP [n] is a posix only statement. The SLEEP
+statement will pause program executation for integer n seconds.
 
-FLIST gives a file listing w/o affecting the current buffer.
+DELAY [n] is an Arduino only statement.
+The DELAY statement pauses execution for n milliseconds. 
 
-SLIST (arduino due ONLY) sends the output of the buffer to Serial port 1
-(serial list). Useful if you have a printer or other device attached to
-port 1. Speed is set up in setup() at about line 430.
+Expect the DELAY statement to also work for posix systems in 
+the very near future.
 
 
--kurt
+------------------------------
+ABS()  and RANDOM()
+
+The ABS(n) function returns the absolute value of the variable n.
+n must be in the range of [a-z]. 
+
+The RANDOM() function returns a random number in the 
+range of 0 and 2^32/2 -1
+
+
+------------------------------
+PINREAD(n) and PINREAD(A0..11)
+
+The PINREAD function returns the value of a digital pin
+when n is an integer value. n can be a variable [a-z] or
+number in the range of 0-the highest pin number on the Arduino
+board.
+
+It is up to you to use the correct pin number. 
+
+When the pin begins with a capital A then PINREAD will
+return the analog value in the range of 0-65535.
+
+A0 thru A11 are the only valid values for the Arduino due board.
+
+NOTE: The PINREAD function is only (currently) valid for
+the Arduino Due board.
+
+Example:
+10 let a=PINREAD(23)
+20 let b=PINREAD(A3)
+30 let c=PINREAD(f)
+
+----------------------------
+PINSET(n)/PINCLR(n)
+
+This is an Arduino Due command only.
+
+The PINSET(n) command does two things:
+1. It sets the pin number given in n to OUTPUT
+2. It then sets the pin to a high state (1).
+
+The pin will remain as an output until either a 
+PINREAD command is given to the pin or the Arduino board 
+is reset or powered off. The pin will stay at a high 
+state until changed with a PINCLR command.
+
+The PINCLR command is the same, except it clears the pin
+(set to low or 0).
+
+The variable n can be a number (0, 22, 50, etc) or a variable
+from [a-z].
+
+Example:
+10 LET p=40
+20 PINCLR(p)
+30 PINSET(34)
 
