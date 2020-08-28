@@ -4,7 +4,7 @@
   for both posix systems and the Arduino Due. It should
   work on anything with a command line and a c compiler.
 
-  First, select the #define (line appx 174) for the 
+  First, select the #define (line appx 209) for the 
   system to use (posix/arduino).
 
   For posix systems (linux etc):
@@ -15,7 +15,7 @@
   First rename basic.c to basic.ino to keep the IDE happy.
 
   NOTE: for the Arduino Due, an SD card is required to use 
-  the file commands. The select pin is set on line 211. You
+  the file commands. The select pin is set on line 249. You
   will need to set it to the select pin you use.
    
   To run on a posix (linux) machine:

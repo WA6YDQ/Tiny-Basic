@@ -1,5 +1,13 @@
-/* basic.c  (C) k theis 2020 <theis.kurt@gmail.com>
- 
+/* basic.c  - a BASIC interpreter for the Arduino Due
+   and general posix (linux) systems.
+
+   
+  (C) 2020 Kurt Theis under the GPL 3.0 license
+  There is no warrantee that this software will 
+  work for any purpose. Please see the license document
+  included with this work.
+  
+  
   This is a Tiny BASIC language interpreter written
   for both posix systems and the Arduino Due. It should
   work on anything with a command line and a c compiler.
@@ -8,7 +16,7 @@
   compile with: cc -o basic basic.c -Wall
  
   For Arduino Due, just use the Arduino IDE to compile and
-  upload this program. First rename basic.c to basic.ino
+  upload this program. !!! First rename basic.c to basic.ino
 
   This program is licensed under the GNU 3.0 license
  
@@ -54,7 +62,7 @@
   END
   EXIT
   SLEEP [0-9] (integer seconds) (NOTE:posix only)
-  DELAY [0-9/a-z] (value is in msec) (NOTE:arduino only)
+  DELAY [0-9/a-z] (value is in msec)
   FOR [a-z]=[a-z/0-9/expr] TO [a-z/0-9/expr] STEP [+-][0-9/a-z/expr]
   NEXT [a-z]
   CLEAR
@@ -115,7 +123,7 @@
   size of the array, maximum size is ARRAYMAX integers. On the Arduino, that's
   4*ARRAYMAX (see #define ARRAYMAX below). 
 
-  Text variables are a$ - z$ and are MAXLINE characters long (#define in line 221).
+  Text variables are a$ - z$ and are MAXLINE characters long (#define in line 234).
   Text vars are used in LET, INPUT and PRINT statements: 
   10 LET a$="hello world"
   20 INPUT "enter name ",n$
@@ -177,7 +185,7 @@
   larger gosub/return stack
   pwm output routines
   posix gpio routines
-  msec posix delays 
+  ctrl-c for posix (arduino already has it) 
   goto/gosub to a variable
   arduino 'tone'
   
@@ -186,7 +194,7 @@
   *****                     *****
   ***** Version Information *****
   *****                     *****
-
+  ver 0.55  DELAY(msec) works for posix now too
   ver 0.54  added an editor, string variables
   ver 0.53  allow user to select directory in dir command
   ver 0.52	change size of basic ram for arduino, 
@@ -199,8 +207,8 @@
 
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 /* how are we coding this? (choose posix/arduino) */
-//#define posix
-#define arduino
+#define posix
+//#define arduino
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 
 
@@ -1586,17 +1594,23 @@ int parse (char line[]) {	// parse the line, run the contents
 		return NORMAL_RETURN;
 	}
 
+	#endif
+
     if (strcmp(keyword,"delay")==0) {       // DELAY
         int res = 0;
         if (option[0] >= 'a' && option[0] <= 'z')
             res = intvar[option[0] - 'a'];
         else
             res = atoi(option);
+        #ifdef arduino
         delay(res);     // in msec
+        #endif
+        #ifdef posix
+        usleep(res*1000);
+        #endif
         return NORMAL_RETURN;
     }
     
-    #endif
 	/* end of arduino specific statements */
 
 	prout(ERR2);    // syntax in line
@@ -1970,7 +1984,12 @@ int parse_input(char line[]) {
         // assign string variable
         if (*p >= 'a' && *p <= 'z' && *(p+1)=='$') { 
             memset(temp,0,MAXLINE);
-            sgets(temp);
+			#ifdef arduino
+			sgets(temp);
+			#endif
+			#ifdef posix
+			fgets(temp,MAXLINE,stdin);
+			#endif
             // strip off the \n
             temp[strlen(temp)-1]='\0';
             strcpy(textvar[*p-'a'],temp);  // save var
@@ -1996,7 +2015,6 @@ int parse_input(char line[]) {
 			continue;
 		}
 
-Serial.println(*p);
 		prout(ERR2);    // syntax error in line
 		return ERROR_RETURN;
 	}
