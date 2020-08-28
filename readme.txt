@@ -63,7 +63,7 @@
   END
   EXIT
   SLEEP [0-9] (integer seconds) (NOTE:posix only)
-  DELAY [0-9/a-z] (value is in msec) (NOTE:arduino only)
+  DELAY [0-9/a-z] (value is in msec)
   FOR [a-z]=[a-z/0-9/expr] TO [a-z/0-9/expr] STEP [+-][0-9/a-z/expr]
   NEXT [a-z]
   CLEAR
