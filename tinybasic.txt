@@ -25,8 +25,8 @@ and it begins with @. The index is a number or letter
 variable from 0 thru the dim statement.
 
 All integer variables a single letters from a thru z
-and are 32 bit signed. They range from -(2^32/2)-1 thru
-+(2^32/2)-1. Array variables have the same range.
+and are 32 bit signed. They range from -(2^31)-1 thru
++(2^31)-1. Array variables have the same range.
 
 NOTE: Integer variables on the Arduino Due and most
 posix systems are 32 bit. There may be posix machines
@@ -104,7 +104,7 @@ The PRINT statement sends the values of variables, expressions
 and strings to your output device (stdout, serial out etc).
 
 PRINT recognizes the following:
-variables a-z
+integer variables a-z
 string variables a$-z$ (seperate from integer variables)
 integer arrays @()
 double quotes for strings: "this is a string"
@@ -112,6 +112,9 @@ commas separates output by 3 spaces: a,b,123
 semi-colons prevents line feeds: 10 print a,b;
 PRINT also recognizes expressions:
 10 PRINT 123*456, a*260+c, 2^8
+20 FOR n=1 TO 20
+30 PRINT n, @(n)
+40 NEXT n
 
 The INPUT statement reads from the input device into a variable.
 INPUT recognizes the following:
@@ -272,12 +275,9 @@ SLEEP/DELAY
 SLEEP [n] is a posix only statement. The SLEEP
 statement will pause program executation for integer n seconds.
 
-DELAY [n] is an Arduino only statement.
+DELAY [n] 
 The DELAY statement pauses execution for n milliseconds. 
-
-Expect the DELAY statement to also work for posix systems in 
-the very near future.
-
+DELAY works on both Arduino and posix.
 
 ------------------------------
 ABS()  and RANDOM()
@@ -286,11 +286,13 @@ The ABS(n) function returns the absolute value of the variable n.
 n must be in the range of [a-z]. 
 
 The RANDOM() function returns a random number in the 
-range of 0 and 2^32/2 -1
+range of 0 and 2^31 -1
 
 
 ------------------------------
 PINREAD(n) and PINREAD(A0..11)
+
+This is an Arduino Due command only.
 
 The PINREAD function returns the value of a digital pin
 when n is an integer value. n can be a variable [a-z] or
