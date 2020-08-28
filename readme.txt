@@ -48,9 +48,9 @@
   These are the statements that this version of basic 
   recognizes:
  
-  LET [a-z/@(a-z/0-9)]=[expr] (see below for expr defines)
-  INPUT ["",;][a-z]
-  PRINT [expr][a-z][0-9]@(a-z/0-9)[; , ""]
+  LET [a-z/@(a-z/0-9)$]=[expr] (see below for expr defines)
+  INPUT ["",;$][a-z]
+  PRINT [expr][a-z][0-9]@(a-z/0-9)[; , ""$]
   FILEREAD [a-z][,]
   FILEWRITE [a-z][,;""][@(a-z)]
   GOTO [0-9]
@@ -95,6 +95,10 @@
   PINREAD(n) w/n = pin# [0-9/a-z] digital
   PINREAD(n) w/n = A0-A11  analog
 
+  *** NOTE ***
+  Expressions are evaluated left to right. Multiplication/
+  division have no higher precidance than addition or
+  subtraction. 
 
   Logical comparisons (logical):
   The following symbols are used in the IF statement 
@@ -125,7 +129,13 @@
   array called @(). The dim nn statement sets up the array. nn 
   is the decimal size of the array, maximum size is ARRAYMAX 
   integers. On the Arduino, that's 4*ARRAYMAX (see #define ARRAYMAX 
-  below). There are NO text variables.
+  below). 
+
+  Text variables are a$ - z$ and are MAXLINE characters long (#define in line 221).
+  Text vars are used in LET, INPUT and PRINT statements:
+  10 LET a$="hello world"
+  20 INPUT "enter name ",n$
+  30 PRINT a$,n$
 
   Spaces MUST be used between line numbers and keywords, and 
   between multiple keywords (ie. 10 for n=1 to 20 step 2). 
@@ -135,18 +145,23 @@
 
   ------------------------------------------------------
 
-  *** Commands ***
+  *** BASIC Commands ***
   
   
   run [linenumber]  	
   Start running the basic program. All variables are cleared.
   If linenumber is given then no variables are cleared and the 
   basic program starts running from the given line.
-  
+ 
+  cls
+  Clear the screen
   
   list					
   Display the basic program in memory.
-  
+ 
+  **edit
+  Start a seperate line editor (this does text lines, 
+  not just basic line-numbered lines);
   
   size/mem				
   Show free (unused) memory.
@@ -162,7 +177,8 @@
 
 
   *dir					
-  Show a directory of files in the current directory.
+  Show a directory of files in the given directory.
+  Example: dir /basic/  Defaults to current directory.
 
 
   *flist			
@@ -199,11 +215,72 @@
 
   ** This only works on the Arduino due.
 
+
+  *** Line Editor Commands ***
+
+  A seperate line editor is invoked by typing 'edit' at 
+  the OK> prompt of the BASIC interpreter. This is an 
+  Arduino-only editor (posix has a lot more and better 
+  editors).
+
+  The BASIC line editor and this line editor share the 
+  same memory space. The BASIC editor is better for writing
+  BASIC code, this line editor is better for writing straight
+  text lines. 
+
+  (NOTE: The basic.ino and edit.ino files are actually part 
+  of a bigger package for the arduino due.)
+
+  When started, you will see a > prompt. There are 3 modes
+  to the editor: command mode, append mode and insert mode, 
+  and the prompts show which mode you are in:
+  >   command mode
+  a>  append mode
+  i>  insert mode
+
+  In command mode, the following commands are accepted:
+  exit, cls, list, new, mem, dir, save [filename], 
+  load [filename], a, i #, d #, f [string], help.
+
+  help shows a command summary.
+  
+  exit exits the editor and returns to BASIC
+  
+  cls clears the screen
+  
+  list shows the buffer contents preceeded by a line number.
+  
+  new clears the buffer
+  
+  mem shows available memory
+  
+  dir shows files in the directory
+  
+  save [filename] saves the buffer to filename
+  
+  load [filename] loads a file to the buffer
+  
+  a enters the append mode. All characters typed
+  will be stored at the end of the buffer. To exit
+  append mode type .q and enter on an otherwise 
+  empty line. You will return to the command mode.
+  
+  i [line number] starts inserting text BEFORE line number.
+  Pressing .q and enter on an otherwise empty line exits
+  insert mode and returns to the command mode.
+  
+  d [line number] deletes the line referenced by line number.
+  
+  f [string] finds every occurance of [string] in the buffer
+  preceeded by it's line number.
+
+
+
+
 ----------------------------
 
   TODO:
   nested for/next loops
-  text variables
   virtual memory for buffer space and arrays
   larger gosub/return stack
   pwm output routines

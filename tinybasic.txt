@@ -14,6 +14,7 @@ DIM/LET
 50 let @(0)=100
 60 let @(1)=a*b
 70 let @(2)=c+d/5
+80 let a$="hello, world!"
 
 Let statements are not optional, and must preceed 
 all variable assignments.
@@ -104,6 +105,7 @@ and strings to your output device (stdout, serial out etc).
 
 PRINT recognizes the following:
 variables a-z
+string variables a$-z$ (seperate from integer variables)
 integer arrays @()
 double quotes for strings: "this is a string"
 commas separates output by 3 spaces: a,b,123
@@ -115,8 +117,11 @@ The INPUT statement reads from the input device into a variable.
 INPUT recognizes the following:
 double quotes for printed strings (prompts): "this is a string"
 commas: separates variables and strings
-variables a-z
+integer variables a-z
+string variables a$-z$
+String and integer variables are seperate
 10 INPUT "enter a number ",a
+20 INPUT "Enter a name: ";n$
 Note that array variables cannot be input to.
 
 -----------------------
