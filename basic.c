@@ -39,9 +39,9 @@
 
   These are the statements that this version of basic recognizes:
  
-  LET [a-z/@(a-z/0-9)]=[expr] (see below for expr defines)
-  INPUT ["",;][a-z]
-  PRINT [expr][a-z][0-9]@(a-z/0-9)[; , ""]
+  LET [a-z/@(a-z/0-9)$]=[expr] (see below for expr defines)
+  INPUT ["",;$][a-z]
+  PRINT [expr][a-z][0-9]@(a-z/0-9)[; , ""$]
   FILEREAD [a-z][,]
   FILEWRITE [a-z][,;""][@(a-z)]
   GOTO [0-9]
@@ -110,10 +110,16 @@
   with an external editor and load the program either from the command line
   or with the 'load' command.
 
-  Variables are 32-bit integer (a-z). There is a single integer array 
+  Numeric variables are 32-bit integer (a-z). There is a single integer array 
   called @(). The dim nn statement sets up the array. nn is the decimal
   size of the array, maximum size is ARRAYMAX integers. On the Arduino, that's
-  4*ARRAYMAX (see #define ARRAYMAX below). There are NO text variables.
+  4*ARRAYMAX (see #define ARRAYMAX below). 
+
+  Text variables are a$ - z$ and are MAXLINE characters long (#define in line 221).
+  Text vars are used in LET, INPUT and PRINT statements: 
+  10 LET a$="hello world"
+  20 INPUT "enter name ",n$
+  30 PRINT a$,n$
 
   Spaces MUST be used between line numbers and keywords, and between multiple 
   keywords (ie. 10 for n=1 to 20 step 2). Variable assignments MUST NOT contain 
@@ -138,7 +144,8 @@
   
   *save [filename]		Save the program in memory to 'filename'.
 
-  *dir					Show a directory of files in the current directory.
+  *dir [dirname]		Show a directory of files in the given directory. Default
+                        directory is /. ex: dir /basic/
 
   *flist				List a file on the drive, no change to local memory.
 
@@ -154,6 +161,8 @@
 
   dump					Show a hex memory dump of the basic file.
 
+  edit                  Jump to co-resident line editor. '.exit' to return to basic
+                        '.help' to show edit commands while in editor.
 
     * only work if an SD card is connected to the SPI 
     port of the Arduino due. On a posix (linux) machine, 
@@ -164,19 +173,22 @@
 
   TODO:
   nested for/next loops
-  text variables
   virtual memory for buffer space and arrays
   larger gosub/return stack
   pwm output routines
   posix gpio routines
   msec posix delays 
   goto/gosub to a variable
+  arduino 'tone'
+  
 
 
   *****                     *****
   ***** Version Information *****
   *****                     *****
 
+  ver 0.54  added an editor, string variables
+  ver 0.53  allow user to select directory in dir command
   ver 0.52	change size of basic ram for arduino, 
   remove \n from run at start, added cls command
   ver 0.51	2E5 and 2e5 equiv (linetolower() caused issue)
@@ -205,6 +217,7 @@
 #include <malloc.h> 	// for memory size determination
 #include <SPI.h>
 #include <SD.h>
+
 #endif
 
 
@@ -226,6 +239,7 @@
 // 16384 + (12032 * 4) + 1024 = 65536  (every byte of buffer = 4 bytes of array)
 #define MAXRAND 2147483647	// 2^32/2-1
 #define SDCARDCS 53			// chip select for the SD card
+
 #endif
 
 #define MAXLINENUMBER 32767
@@ -251,10 +265,10 @@
 #define ERR10   "usage: load filename\r\n"
 #define ERR11   "usage: save filename\r\n"
 #define ERR12   "error creating file in "
-#define ERR13   "error reading file in "
+#define ERR13   "error reading file\r\n"
 #define ERR14   "usage: flist filename\r\n"
 #define ERR15   "usage: delete filename\r\n"
-#define ERR16   "file not found in "
+#define ERR16   "file not found\r\n"
 #define ERR17   "unexpected error in line "
 #define ERR18   "end at line "
 #define ERR19   "stop at line "
@@ -354,6 +368,12 @@ extern char _end;
 char *ramstart=(char *)0x20070000;
 char *ramend=(char *)0x20088000;
 extern "C" char *sbrk(int i);
+
+/* // used for virtual mem
+using namespace virtmem;
+SDVAlloc valloc;
+SdFat sd;
+*/
 #endif
 
 unsigned char *buffer;
@@ -379,6 +399,8 @@ int intvar[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 /* define array for DIM and @(n) */
 int* intarray = (int*)NULL;
 
+/* define text variables */
+char textvar[26][80] = {};
 
 
 
@@ -448,6 +470,10 @@ void sgets(char *line) {
 /* SETUP */
 /* ***** */
 #ifdef arduino
+
+Sd2Card card;
+SdVolume volume;
+
 void setup() {
     Serial.begin(9600);     // console I/O port 0
     Serial1.begin(9600);    // printer I/O port 1
@@ -460,7 +486,7 @@ void setup() {
         while (1);
     }
 
-
+    //valloc.start(); // initialize virtual mem
 }
 #endif
 
@@ -593,6 +619,13 @@ char *p;
             continue;
         }
 
+        #ifdef arduino
+        /* jump to line editor */
+        if (strncmp(line,"edit",4)==0) {
+            ledit();
+            continue;
+        }
+        #endif
         
 		/* list - display basic listing in buffer */
 		if (strncmp(line,"list",4)==0) {
@@ -652,6 +685,7 @@ char *p;
             showmem();
 			continue;
 		}
+
 
 		/* load - load file to buffer */
 		if (strncmp(line,"load",4)==0) {
@@ -1101,7 +1135,9 @@ char ch;
 /* show directory */
 /* ************** */
 void dir(char* line) {
-
+char cmd[12]={},dirname[20]={};
+sscanf(line,"%s %s ",cmd,dirname);
+    if (strlen(dirname)==0) strcpy(dirname,"/");
     #ifdef posix
     #include <dirent.h>
 	struct dirent **namelist;
@@ -1121,7 +1157,7 @@ void dir(char* line) {
     #endif
     
     #ifdef arduino
-    root = SD.open("/BASIC/");	// normally just SD.open("/");
+    root = SD.open(dirname);	// set to a directory you want to hold files
     printDirectory(root,0);
     #endif
 	
@@ -1266,6 +1302,9 @@ int res=0;			// result returned from parse()
     forstep = 0;
     foraddr = 0;
     tovar = 0;
+
+    // clear the string variables
+    memset(textvar,0,26*MAXLINE);
 
     #ifdef arduino
     if (sdFile) sdFile.close();     // close if open
@@ -1463,8 +1502,13 @@ int parse (char line[]) {	// parse the line, run the contents
 	if (strcmp(keyword,"clear")==0) {	// CLEAR
 		for (unsigned char ch='a'; ch <= 'z'; ch++)
 			intvar[ch-'a']=0;			// clear all integer variables
+		
 		free(intarray);
 		arraymax=0;
+        
+        // clear the string variables
+        memset(textvar,0,26*MAXLINE);
+		
 		return NORMAL_RETURN;
 	}
 
@@ -1597,7 +1641,23 @@ int cnt=0;
             continue;
         }
 
-		// assign variable
+        // assign string variable
+        if (*p >= 'a' && *p <= 'z' && *(p+1)=='$') {
+            if (*(p+2) != '=' && *(p+3) != '"') { 
+                prout(ERR2);        // syntax error
+                return ERROR_RETURN;   
+            }
+            char tline[MAXLINE]={}; // hold string here
+            int indx=0;
+            char *st = p+4;  // get everything between double quotes
+            while (*st != '"') 
+                tline[indx++] = *st++; 
+            strcpy(textvar[*p-'a'],tline);  // save var
+            while (*p != '\n') p++;
+            continue;
+        }
+
+		// assign integer variable
 		if (*p >= 'a' && *p <= 'z') {
 			intvar[*p -'a'] = eval(p+2);
 			if (error) {
@@ -1866,7 +1926,7 @@ int parse_input(char line[]) {
 	char *p;
 	char lineno[6]={};
 	sscanf(line,"%s ",lineno);	// get line number for error messages
-	char temp[12]={};
+	char temp[MAXLINE]={};
 
 	p = strstr(line,"input");
 	if (p == NULL) {
@@ -1907,9 +1967,21 @@ int parse_input(char line[]) {
             continue;
         }
 
+        // assign string variable
+        if (*p >= 'a' && *p <= 'z' && *(p+1)=='$') { 
+            memset(temp,0,MAXLINE);
+            sgets(temp);
+            // strip off the \n
+            temp[strlen(temp)-1]='\0';
+            strcpy(textvar[*p-'a'],temp);  // save var
+            p+=2;
+            continue;
+        }
+
+
 		// load an integer variable
 		if (*p >= 'a' && *p <= 'z') {
-			memset(temp,0,12);
+			memset(temp,0,MAXLINE);
 
 			#ifdef posix
 			fgets(temp,11,stdin); 
@@ -1924,6 +1996,7 @@ int parse_input(char line[]) {
 			continue;
 		}
 
+Serial.println(*p);
 		prout(ERR2);    // syntax error in line
 		return ERROR_RETURN;
 	}
@@ -2292,7 +2365,16 @@ int parse_print(char line[]) {	// the entire line is passed
 			p++;		// increment past "
 			continue;
 		}
-		
+
+        // test string vars
+        if (*p >= 'a' && *p <= 'z' && *(p+1) == '$') {
+            sprintf(printmessage,"%s",textvar[*p-'a']);
+            prout(printmessage);
+            p+=2;   // point past a$
+            continue;
+        }
+
+        // test numeric vars
 		if ((*p >= 'a' && *p <= 'z') && 
 			(*(p+1)==',' || *(p+1)==';' || *(p+1)=='\n')) {	// print value of integer variable
 				sprintf(printmessage,"%d",intvar[(unsigned char)*p-'a']);		// but only if followed by , or ;  or \n
