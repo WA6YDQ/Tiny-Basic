@@ -125,7 +125,7 @@
   create the file with an external editor and load the program 
   either from the command line or with the 'load' command.
 
-  Variables are 32-bit integer (a-z). There is a single integer 
+  Numeric variables are 32-bit integer (a-z). There is a single integer 
   array called @(). The dim nn statement sets up the array. nn 
   is the decimal size of the array, maximum size is ARRAYMAX 
   integers. On the Arduino, that's 4*ARRAYMAX (see #define ARRAYMAX 
@@ -216,7 +216,21 @@
   ** This only works on the Arduino due.
 
 
-  *** Line Editor Commands ***
+  *** BASIC Line Editor Usage ***
+
+  At the OK> prompt in BASIC you can enter lines of BASIC 
+  code preceeded by a line number:
+  10 REM
+  20 FOR n=1 to 10
+  30 PRINT n, n*n
+  40 NEXT n
+
+  To delete an existing BASIC line, enter the line number and 
+  press enter. To edit a BASIC line, just re-enter the line number
+  followed by the BASIC code. 
+
+
+  *** Edit Line Editor Commands ***
 
   A seperate line editor is invoked by typing 'edit' at 
   the OK> prompt of the BASIC interpreter. This is an 
