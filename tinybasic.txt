@@ -7,14 +7,21 @@ BASIC statements and functions
 
 DIM/LET
 
+Integer variables:
 10 let a=1
 20 let b=7*6
 30 let c=a*b, d=10*a
+
+Arrays:
 40 dim 20
 50 let @(0)=100
 60 let @(1)=a*b
 70 let @(2)=c+d/5
 80 let a$="hello, world!"
+
+Text/string variables:
+90 let a$="hello, world!"
+100 let z$="enter a value: "
 
 Let statements are not optional, and must preceed 
 all variable assignments.
@@ -25,8 +32,8 @@ and it begins with @. The index is a number or letter
 variable from 0 thru the dim statement.
 
 All integer variables a single letters from a thru z
-and are 32 bit signed. They range from -(2^31)-1 thru
-+(2^31)-1. Array variables have the same range.
+and are 32 bit signed. They range from -2^31-1 thru
++2^31-1. Array variables have the same range.
 
 NOTE: Integer variables on the Arduino Due and most
 posix systems are 32 bit. There may be posix machines
@@ -36,6 +43,10 @@ There can be no spaces between the variable letter and
 the '=' and no space between the '=' and the assignment
 variable or number. After an assignment there can be a 
 comma and another assignment.
+
+Text/string variables are filled with NULL (0) until 
+used, and are cleared when the basic program is started.
+
 
 --------------
 
@@ -274,10 +285,14 @@ SLEEP/DELAY
 
 SLEEP [n] is a posix only statement. The SLEEP
 statement will pause program executation for integer n seconds.
+10 sleep 5
+
 
 DELAY [n] 
 The DELAY statement pauses execution for n milliseconds. 
 DELAY works on both Arduino and posix.
+20 delay 250
+
 
 ------------------------------
 ABS()  and RANDOM()
@@ -285,9 +300,15 @@ ABS()  and RANDOM()
 The ABS(n) function returns the absolute value of the variable n.
 n must be in the range of [a-z]. 
 
+Example:
+10 let a=abs(c)
+
+
 The RANDOM() function returns a random number in the 
 range of 0 and 2^31 -1
 
+Example:
+20 let r=random()
 
 ------------------------------
 PINREAD(n) and PINREAD(A0..11)

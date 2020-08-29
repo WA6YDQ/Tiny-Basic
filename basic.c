@@ -1,5 +1,5 @@
 /* basic.c  - a BASIC interpreter for the Arduino Due
-   and general posix (linux) systems.
+   and posix (linux) systems.
 
    
   (C) 2020 Kurt Theis under the GPL 3.0 license
@@ -7,41 +7,59 @@
   work for any purpose. Please see the license document
   included with this work.
   
+  ----------------------------------------------------------
+  ----------------------------------------------------------
   
   This is a Tiny BASIC language interpreter written
   for both posix systems and the Arduino Due. It should
   work on anything with a command line and a c compiler.
 
+  First uncomment the define for the platform on ~line 310.
+  for Arduino Due:
+  #define arduino
+  for posix/linux:
+  #define posix
+
+  And comment the opposite. Then compile:
+
   For posix systems (linux etc):
   compile with: cc -o basic basic.c -Wall
  
-  For Arduino Due, just use the Arduino IDE to compile and
-  upload this program. !!! First rename basic.c to basic.ino
+  For Arduino Due: 
+  rename basic.c to basic.ino
+  Use the Arduino IDE to compile and
+  upload this program.
 
-  This program is licensed under the GNU 3.0 license
- 
+   ------------------------------ 
   To run on a posix (linux) machine::
-  basic [filename] where filename is an optional basic source file.
-  After loading, the program will run until a STOP, END or EXIT statement.
+  basic [filename] where filename is an optional basic 
+  source file. After loading, the program will run until a 
+  STOP, END or EXIT statement.
 
-  If a filename is not given on the command line, basic will start with 
-  an Ok> prompt and place you in the editor mode with an empty file.
-  
-  On an Arduino Due: load the program using the IDE and plug in a usb 
-  cable to the usb port closest to the power jack. Terminal defaults
-  to 9600/8/N/1 and vt100/vt102. Putty, minicom, etc should work.
+  If a filename is not given on the command line, basic 
+  will start with an Ok> prompt and place you in the editor 
+  mode with an empty file.
 
-  The Arduino Due requires an SD card for the file commands to work.
-  I use the Adafruit SD card using SPI. The chip select #define is on
-  line 214 of this file. It must be set to the pin number you use on 
-  your board setup.
+   ----------------
+  On an Arduino Due: 
+  load the program using the IDE and plug in a usb 
+  cable to the usb port closest to the power jack. Terminal 
+  defaults to 9600/8/N/1 and vt100/vt102. Putty, minicom, 
+  etc should work.
+
+  The Arduino Due requires an SD card for the file commands 
+  to work. I use the Adafruit SD card using SPI. The chip 
+  select #define is on about line 310 of this file. It must 
+  be set to the pin number you use on your board setup.
 
   -----------------------------------------------------------------
-
-  NOTE: Although statements, expressions and functions appear in UPPER CASE,
-  the basic lines entered are converted to lower case when typed. You can use 
-  either UPPER or lower case in your statements. Characters between double 
-  quotes ("") or parens () are NOT converted.
+  -----------------------------------------------------------------
+  
+  NOTE: Although statements, expressions and functions appear 
+  in UPPER CASE, the basic lines entered are converted to lower 
+  case when typed. You can use either UPPER or lower case in 
+  your statements. Characters between double quotes ("") or 
+  parens () are NOT converted.
 
   -----------------------------------------------------------------
 
@@ -113,25 +131,29 @@
   ------------------------------------------------------------------------
 
   Line numbers MUST be used, and be in the range of 1 thru 32767.
-  Lines may be blank (newline terminated). However, the basic editor 
-  does not save blank lines to memory. If you want them, create the file 
-  with an external editor and load the program either from the command line
-  or with the 'load' command.
+  Lines may be blank (newline terminated). However, the basic 
+  editor does not save blank lines to memory. If you want them, 
+  create the file with an external editor and load the program 
+  either from the command line or with the 'load' command 
+  (or use the co-resident editor).
 
-  Numeric variables are 32-bit integer (a-z). There is a single integer array 
-  called @(). The dim nn statement sets up the array. nn is the decimal
-  size of the array, maximum size is ARRAYMAX integers. On the Arduino, that's
-  4*ARRAYMAX (see #define ARRAYMAX below). 
+  Numeric variables are 32-bit integer (a-z). There is a single 
+  integer array called @(). The dim nn statement sets up the 
+  array. nn is the decimal size of the array, maximum size is 
+  ARRAYMAX integers. On the Arduino, that's 4*ARRAYMAX 
+  (see #define ARRAYMAX below). 
 
-  Text variables are a$ - z$ and are MAXLINE characters long (#define in line 234).
-  Text vars are used in LET, INPUT and PRINT statements: 
+  Text variables are a$ - z$ and are MAXLINE characters 
+  long (#define in line ~ 310). Text vars are used in LET, 
+  INPUT and PRINT statements: 
   10 LET a$="hello world"
   20 INPUT "enter name ",n$
   30 PRINT a$,n$
 
-  Spaces MUST be used between line numbers and keywords, and between multiple 
-  keywords (ie. 10 for n=1 to 20 step 2). Variable assignments MUST NOT contain 
-  any spaces (ie. 10 let a=5, b=a*20/3, c=a*b/2) but can use comma seperators
+  Spaces MUST be used between line numbers and keywords, and 
+  between multiple keywords (ie. 10 for n=1 to 20 step 2). 
+  Variable assignments MUST NOT contain any spaces 
+  (ie. 10 let a=5, b=a*20/3, c=a*b/2) but can use comma seperators
   and spaces between commas and the next assignment.
 
   -------------------------------------------------------------------------
@@ -169,8 +191,8 @@
 
   dump					Show a hex memory dump of the basic file.
 
-  edit                  Jump to co-resident line editor. '.exit' to return to basic
-                        '.help' to show edit commands while in editor.
+  edit                  Jump to co-resident line editor. 'exit' to return to basic,
+                        'help' to show edit commands while in editor.
 
     * only work if an SD card is connected to the SPI 
     port of the Arduino due. On a posix (linux) machine, 
@@ -178,6 +200,85 @@
 
     ** This only works on the Arduino due.
 
+  --------------------------------------------------
+  --------------------------------------------------
+
+  *** BASIC Line Editor Usage ***
+
+  At the OK> prompt in BASIC you can enter lines of BASIC 
+  code preceeded by a line number:
+  10 REM
+  20 FOR n=1 to 10
+  30 PRINT n, n*n
+  40 NEXT n
+
+  To delete an existing BASIC line, enter the line number and 
+  press enter. To edit a BASIC line, just re-enter the line number
+  followed by the BASIC code. 
+
+  ---------------------------------------------------
+  ---------------------------------------------------
+
+  *** Edit Line Editor Commands ***
+
+  A seperate line editor is invoked by typing 'edit' at 
+  the OK> prompt of the BASIC interpreter. This is an 
+  Arduino-only editor (posix has a lot more and better 
+  editors).
+
+  The BASIC line editor and this line editor share the 
+  same memory space. The BASIC editor is better for writing
+  BASIC code, this line editor is better for writing straight
+  text lines. 
+
+  (NOTE: The basic.ino and edit.ino files are actually part 
+  of a bigger package for the arduino due.)
+
+  When started, you will see a > prompt. There are 3 modes
+  to the editor: command mode, append mode and insert mode, 
+  and the prompts show which mode you are in:
+  >   command mode
+  a>  append mode
+  i>  insert mode
+
+  In command mode, the following commands are accepted:
+  exit, cls, list, new, mem, dir, save [filename], 
+  load [filename], a, i #, d #, f [string], help.
+
+  help shows a command summary.
+  
+  exit exits the editor and returns to BASIC
+  
+  cls clears the screen
+  
+  list shows the buffer contents preceeded by a line number.
+  
+  new clears the buffer
+  
+  mem shows available memory
+  
+  dir shows files in the directory
+  
+  save [filename] saves the buffer to filename
+  
+  load [filename] loads a file to the buffer
+  
+  a enters the append mode. All characters typed
+  will be stored at the end of the buffer. To exit
+  append mode type .q and enter on an otherwise 
+  empty line. You will return to the command mode.
+  
+  i [line number] starts inserting text BEFORE line number.
+  Pressing .q and enter on an otherwise empty line exits
+  insert mode and returns to the command mode.
+  
+  d [line number] deletes the line referenced by line number.
+  
+  f [string] finds every occurance of [string] in the buffer
+  preceeded by it's line number.
+
+
+  
 
   TODO:
   nested for/next loops
@@ -187,9 +288,8 @@
   posix gpio routines
   ctrl-c for posix (arduino already has it) 
   goto/gosub to a variable
-  arduino 'tone'
+  arduino 'tone' function
   
-
 
   *****                     *****
   ***** Version Information *****
@@ -207,10 +307,15 @@
 
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 /* how are we coding this? (choose posix/arduino) */
-#define posix
-//#define arduino
+//#define posix               // build for posix/linux
+#define arduino               // build for arduino
+#define MAXLINE 80            // max chars in a line
+#define SDCARDCS 53           // chip select for the SD card
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 
+// No #define's below this point need to be touched. 
+
+//#define dueMini     // you won't need this for basic
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -225,13 +330,20 @@
 #include <malloc.h> 	// for memory size determination
 #include <SPI.h>
 #include <SD.h>
+#endif
 
+// this is not part of basic, but included since it's how my stuff is wired
+#ifdef dueMini
+#include "Adafruit_FRAM_SPI.h"
+uint8_t FRAM_CS = 52;   // chip select for SPI fram chip 
+Adafruit_FRAM_SPI fram = Adafruit_FRAM_SPI(FRAM_CS);  // use hardware SPI
+uint32_t fram_addr = 0;
+uint8_t fram_data = 0;
 #endif
 
 
-
 /* general system defines */
-#define MAXLINE 80			// max chars in a line
+
 #define PROMPT "Ok> "
 
 #ifdef posix
@@ -245,13 +357,12 @@
 #define ARRAYMAX 12032      // max size of @() array (4 bytes/element)
 // NOTE: If you need more program size, adjust array size down so that you have 1024 bytes on top
 // 16384 + (12032 * 4) + 1024 = 65536  (every byte of buffer = 4 bytes of array)
-#define MAXRAND 2147483647	// 2^32/2-1
-#define SDCARDCS 53			// chip select for the SD card
+#define MAXRAND 2147483647	// 2^31-1
 
 #endif
 
-#define MAXLINENUMBER 32767
-#define MAXRETURNSTACKPOS 10 // basic: max stack depth
+#define MAXLINENUMBER 32767     // increase if you need to
+#define MAXRETURNSTACKPOS 10    // basic: max stack depth
 #define HEADER "\r\nTiny+ Basic    (C) 2020 Kurt Theis"
 
 /* define routine return values */
@@ -369,7 +480,7 @@ FILE *diskfile;		// used for fileopen/close etc
 #ifdef arduino
 File root;          // used in dir
 File sdFile;        // used in save, load
-//const int chipSelect = 53;  // SD card chip select
+
 
 // used in showmem()
 extern char _end;
@@ -407,7 +518,7 @@ int intvar[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 /* define array for DIM and @(n) */
 int* intarray = (int*)NULL;
 
-/* define text variables */
+/* define text variables (this uses 2K ram - could be done better) */
 char textvar[26][80] = {};
 
 
@@ -421,13 +532,13 @@ void showmem() {
     char *heapend=sbrk(0);
     register char * stack_ptr asm("sp");
     struct mallinfo mi=mallinfo();
-    Serial.print("\rDynamic RAM used ");
+    Serial.print(F("\rDynamic RAM used "));
     Serial.println(mi.uordblks);
-    Serial.print("\rProg Static Ram used ");
+    Serial.print(F("\rProg Static Ram used "));
     Serial.println(&_end - ramstart);
-    Serial.print("\rStack Ram used ");
+    Serial.print(F("\rStack Ram used "));
     Serial.println(ramend - stack_ptr);
-    Serial.print("\rFree Mem ");
+    Serial.print(F("\rFree Mem "));
     Serial.println(stack_ptr - heapend + mi.fordblks);
     #endif
     return;
@@ -445,9 +556,9 @@ void sgets(char *line) {
             ch = Serial.read();
             if (ch == 0x08) {       // backspace
                 if (cnt > 0) {   
-                    Serial.print("\b");
-                    Serial.print(" ");
-                    Serial.print("\b");
+                    Serial.print(F("\b"));
+                    Serial.print(F(" "));
+                    Serial.print(F("\b"));
                     line[cnt] = '\0';
                     cnt--;
                 } else {
@@ -489,12 +600,28 @@ void setup() {
 
     /* set up SD card */
     if (!SD.begin(SDCARDCS)) {        // SD chip select in #define above
-        Serial.println("SD card init failed!");
-        Serial.println("Power down, fix and restart");
+        Serial.println(F("SD card init failed!"));
+        Serial.println(F("Power down, fix and restart"));
         while (1);
     }
 
-    //valloc.start(); // initialize virtual mem
+    /* test spi fram */
+    #ifdef dueMini
+    fram_addr = 0;
+    fram_data = 128;
+    if (fram.begin(3)) {
+        fram.writeEnable(true);
+        fram.write(fram_addr, &fram_data, sizeof(int32_t));
+        fram.writeEnable(false);
+        fram.read(fram_addr,&fram_data, sizeof(int32_t));
+        if (fram_data != 128) 
+            Serial.println(F("fram test: bad data returned"));      
+    } else 
+        Serial.println(F("Cannot access FRAM memory"));
+    #endif
+
+    /* initialize virtual mem */
+    //valloc.start(); 
 }
 #endif
 
@@ -504,7 +631,7 @@ void setup() {
 /* ***** */
 /* PROUT */
 /* ***** */
-/* send string to stdout/serialout */
+/* printout - send string to stdout/serialout */
 void prout(char message[MAXLINE+(MAXLINE/2)]) {
     #ifdef posix
 	printf("%s",message);
@@ -622,7 +749,7 @@ char *p;
         /* clear the display */
         if (strncmp(line,"cls",3)==0) {
             #ifdef arduino
-            Serial.println("\e[H\e[J");
+            Serial.println(F("\e[H\e[J"));
             #endif
             continue;
         }
@@ -664,7 +791,7 @@ char *p;
 			continue;
 		}
 
-		/* dump - hex dump of program listing */
+		/* dump - hex dump of program listing (used in debugging the editor) */
 		if (strncmp(line,"dump",4)==0) {
 			int addr = 0;
 			while (addr < position) {
@@ -1191,7 +1318,7 @@ void printDirectory(File dir, int numTabs) {
       printDirectory(entry, numTabs + 1);
     } else {
       // files have sizes, directories do not
-      Serial.print("\t\t");
+      Serial.print(F("\t\t"));
       Serial.println(entry.size(), DEC);
     }
     entry.close();
@@ -1269,7 +1396,7 @@ int res=0;			// result returned from parse()
 
     //prout("\r\n");
     
-	// test integrity of basic file
+	// test integrity of basic file (fixed after bug in load() found)
 	for (n=0; n<position-1; n++) {
 		if (buffer[n] == 0) {
 			sprintf(printmessage,"ERROR in basic file at address %04x\r\n",n);
@@ -1333,7 +1460,7 @@ int res=0;			// result returned from parse()
 	while (1) {
 
         #ifdef arduino
-		/* stop on ^c */
+		/* stop on ^c (equiv in posix would be a signal) */
         if (Serial.available() > 0) {
             char ch = Serial.read();
             if (ch == 0x03) {   // ^C
@@ -1567,6 +1694,22 @@ int parse (char line[]) {	// parse the line, run the contents
     }
 
 
+    if (strcmp(keyword,"delay")==0) {       // DELAY
+        int res = 0;
+        if (option[0] >= 'a' && option[0] <= 'z')
+            res = intvar[option[0] - 'a'];
+        else
+            res = atoi(option);
+        #ifdef arduino
+        delay(res);     // in msec
+        #endif
+        #ifdef posix
+        usleep(res*1000);
+        #endif
+        return NORMAL_RETURN;
+    }
+
+
 	/* arduino specific statements */
     #ifdef arduino
 
@@ -1594,24 +1737,11 @@ int parse (char line[]) {	// parse the line, run the contents
 		return NORMAL_RETURN;
 	}
 
-	#endif
+	#endif  /* end of arduino specific statements */
 
-    if (strcmp(keyword,"delay")==0) {       // DELAY
-        int res = 0;
-        if (option[0] >= 'a' && option[0] <= 'z')
-            res = intvar[option[0] - 'a'];
-        else
-            res = atoi(option);
-        #ifdef arduino
-        delay(res);     // in msec
-        #endif
-        #ifdef posix
-        usleep(res*1000);
-        #endif
-        return NORMAL_RETURN;
-    }
     
-	/* end of arduino specific statements */
+    
+	
 
 	prout(ERR2);    // syntax in line
 	return ERROR_RETURN;
@@ -1718,7 +1848,7 @@ int cnt=0;
 				prout(ERR23);   // array too large
 				return ERROR_RETURN;
 			}
-			if (*p != ')') prout("missing )");
+			if (*p != ')') prout("missing )");  // replace this w/syntax error
 			p++;
 			if (*p != '=') prout("missing =");
 			p++;

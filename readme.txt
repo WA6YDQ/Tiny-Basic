@@ -1,52 +1,69 @@
-  basic.c  (C) k theis 2020 <theis.kurt@gmail.com>
- 
+   basic.c  - a BASIC interpreter for the Arduino Due
+   and posix (linux) systems.
+
+   
+  (C) 2020 Kurt Theis under the GPL 3.0 license
+  There is no warrantee that this software will 
+  work for any purpose. Please see the license document
+  included with this work.
+  
+  ----------------------------------------------------------
+  ----------------------------------------------------------
+  
   This is a Tiny BASIC language interpreter written
   for both posix systems and the Arduino Due. It should
   work on anything with a command line and a c compiler.
 
-  First, select the #define (line appx 209) for the 
-  system to use (posix/arduino).
+  First uncomment the define for the platform on ~line 310.
+  for Arduino Due:
+  #define arduino
+  for posix/linux:
+  #define posix
+
+  And comment the opposite. Then compile:
 
   For posix systems (linux etc):
   compile with: cc -o basic basic.c -Wall
  
-  For Arduino Due, just use the Arduino IDE to compile 
-  and upload this program. 
-  First rename basic.c to basic.ino to keep the IDE happy.
+  For Arduino Due: 
+  rename basic.c to basic.ino
+  Use the Arduino IDE to compile and
+  upload this program.
 
-  NOTE: for the Arduino Due, an SD card is required to use 
-  the file commands. The select pin is set on line 249. You
-  will need to set it to the select pin you use.
-   
-  To run on a posix (linux) machine:
-  basic [filename] where filename is an optional 
-  basic source file. After loading, the program will 
-  run until a STOP, END or EXIT statement.
+   ------------------------------ 
+  To run on a posix (linux) machine::
+  basic [filename] where filename is an optional basic 
+  source file. After loading, the program will run until a 
+  STOP, END or EXIT statement.
 
-  If a filename is not given on the command line, 
-  basic will start with an Ok> prompt and place you 
-  in the editor mode with an empty file.
+  If a filename is not given on the command line, basic 
+  will start with an Ok> prompt and place you in the editor 
+  mode with an empty file.
+
+   ----------------
+  On an Arduino Due: 
+  load the program using the IDE and plug in a usb 
+  cable to the usb port closest to the power jack. Terminal 
+  defaults to 9600/8/N/1 and vt100/vt102. Putty, minicom, 
+  etc should work.
+
+  The Arduino Due requires an SD card for the file commands 
+  to work. I use the Adafruit SD card using SPI. The chip 
+  select #define is on about line 310 of this file. It must 
+  be set to the pin number you use on your board setup.
+
+  -----------------------------------------------------------------
+  -----------------------------------------------------------------
   
-  
-  To run on an Arduino Due: load the program using the 
-  IDE and plug in a usb cable to the usb port closest 
-  to the power jack. Terminal defaults to 9600/8/N/1 and 
-  vt100/vt102. Putty, minicom, etc should work.
+  NOTE: Although statements, expressions and functions appear 
+  in UPPER CASE, the basic lines entered are converted to lower 
+  case when typed. You can use either UPPER or lower case in 
+  your statements. Characters between double quotes ("") or 
+  parens () are NOT converted.
 
-  This program is licensed under the GNU 3.0 license
+  -----------------------------------------------------------------
 
-  ----------------------------------------------------
-
-  NOTE: Although statements, expressions and functions 
-  appear in UPPER CASE, the basic lines entered are converted 
-  to lower case when typed. You can use either UPPER or lower 
-  case in your statements. Characters between double quotes ("") 
-  or parens () are NOT converted.
-
-  -----------------------------------------------------
-
-  These are the statements that this version of basic 
-  recognizes:
+  These are the statements that this version of basic recognizes:
  
   LET [a-z/@(a-z/0-9)$]=[expr] (see below for expr defines)
   INPUT ["",;$][a-z]
@@ -76,8 +93,8 @@
   PINCLR [0-9/a-z]
   
 
-  expr is a simple assignment (5, a+20, c-5, x) used for 
-  LET, PRINT and FOR. expr returns a numeric integer value.
+  expr is a simple assignment (5, a+20, c-5, x) used for LET, PRINT
+  and FOR. expr returns a numeric integer value.
 
   expr recognized the following operands:
   +  Addition
@@ -95,17 +112,11 @@
   PINREAD(n) w/n = pin# [0-9/a-z] digital
   PINREAD(n) w/n = A0-A11  analog
 
-  *** NOTE ***
-  Expressions are evaluated left to right. Multiplication/
-  division have no higher precidance than addition or
-  subtraction. 
 
   Logical comparisons (logical):
-  The following symbols are used in the IF statement 
-  to compare 2 values:
-  
+  The following symbols are used in the IF statement to compare 2 values:
   =  lvalue is equal to rvalue
-  #  lvalue is not equal to rvalue
+  #	 lvalue is not equal to rvalue
   <  lvalue is less than rvalue
   >  lvalue is greater than rvalue
   &  lvalue logical and with rvalue
@@ -117,22 +128,24 @@
   RANDOM()				random number between 0 and 2^32/2 -1
 
   Functions return a numeric integer value 
-  --------------------------------------------------
+  ------------------------------------------------------------------------
 
   Line numbers MUST be used, and be in the range of 1 thru 32767.
   Lines may be blank (newline terminated). However, the basic 
   editor does not save blank lines to memory. If you want them, 
   create the file with an external editor and load the program 
-  either from the command line or with the 'load' command.
+  either from the command line or with the 'load' command 
+  (or use the co-resident editor).
 
-  Numeric variables are 32-bit integer (a-z). There is a single integer 
-  array called @(). The dim nn statement sets up the array. nn 
-  is the decimal size of the array, maximum size is ARRAYMAX 
-  integers. On the Arduino, that's 4*ARRAYMAX (see #define ARRAYMAX 
-  below). 
+  Numeric variables are 32-bit integer (a-z). There is a single 
+  integer array called @(). The dim nn statement sets up the 
+  array. nn is the decimal size of the array, maximum size is 
+  ARRAYMAX integers. On the Arduino, that's 4*ARRAYMAX 
+  (see #define ARRAYMAX below). 
 
-  Text variables are a$ - z$ and are MAXLINE characters long (#define in line 221).
-  Text vars are used in LET, INPUT and PRINT statements:
+  Text variables are a$ - z$ and are MAXLINE characters 
+  long (#define in line ~ 310). Text vars are used in LET, 
+  INPUT and PRINT statements: 
   10 LET a$="hello world"
   20 INPUT "enter name ",n$
   30 PRINT a$,n$
@@ -143,78 +156,52 @@
   (ie. 10 let a=5, b=a*20/3, c=a*b/2) but can use comma seperators
   and spaces between commas and the next assignment.
 
-  ------------------------------------------------------
+  -------------------------------------------------------------------------
 
-  *** BASIC Commands ***
+  *** Commands ***
+  run [linenumber]  	Start running the basic program. All variables are cleared.
+  						If linenumber is given then no variables are cleared. The 
+						basic program starts running from the given line.
+
+  list					Display the basic program in memory.
+
+  cls                   Clear the display
+
+  size/mem				Show free (unused) memory.
+
+  *load [filename]		Load the file 'filename' into memory clearing out any 
+  						prior code.
   
+  *save [filename]		Save the program in memory to 'filename'.
+
+  *dir [dirname]		Show a directory of files in the given directory. Default
+                        directory is /. ex: dir /basic/
+
+  *flist				List a file on the drive, no change to local memory.
+
+  **slist				List the program in memory to Serial Port #1 (printer etc).
+
+  *delete               Delete a file
   
-  run [linenumber]  	
-  Start running the basic program. All variables are cleared.
-  If linenumber is given then no variables are cleared and the 
-  basic program starts running from the given line.
- 
-  cls
-  Clear the screen
-  
-  list					
-  Display the basic program in memory.
- 
-  **edit
-  Start a seperate line editor (this does text lines, 
-  not just basic line-numbered lines);
-  
-  size/mem				
-  Show free (unused) memory.
-  
-  
-  *load [filename]		
-  Load the file 'filename' into memory clearing out any 
-  prior code.
-  
-  
-  *save [filename]		
-  Save the program in memory to 'filename'.
+  new					Delete the program currently in memory.
 
+  exit					Exit the basic interpreter.
 
-  *dir					
-  Show a directory of files in the given directory.
-  Example: dir /basic/  Defaults to current directory.
+  trace					Toggle program tracing ON/OFF.
 
+  dump					Show a hex memory dump of the basic file.
 
-  *flist			
-  List a file on the drive, no change to local memory.
+  edit                  Jump to co-resident line editor. 'exit' to return to basic,
+                        'help' to show edit commands while in editor.
 
+    * only work if an SD card is connected to the SPI 
+    port of the Arduino due. On a posix (linux) machine, 
+    these commands access the current directory you are in.
 
-  **slist				
-  List the program in memory to Serial Port #1 (printer etc).
+    ** This only works on the Arduino due.
 
-
-  *delete               
-  Delete a file
-
-
-  new					
-  Delete the program currently in memory.
-
-
-  exit					
-  Exit the basic interpreter.
-
-
-  trace					
-  Toggle program tracing ON/OFF.
-
-
-  dump					
-  Show a hex memory dump of the basic file.
-
-
-  * only work if an SD card is connected to the SPI 
-  port of the Arduino due. On a posix (linux) machine, 
-  these commands access the current directory you are in.
-
-  ** This only works on the Arduino due.
-
+  --------------------------------------------------
+  --------------------------------------------------
 
   *** BASIC Line Editor Usage ***
 
@@ -229,6 +216,8 @@
   press enter. To edit a BASIC line, just re-enter the line number
   followed by the BASIC code. 
 
+  ---------------------------------------------------
+  ---------------------------------------------------
 
   *** Edit Line Editor Commands ***
 
@@ -289,9 +278,7 @@
   preceeded by it's line number.
 
 
-
-
-----------------------------
+  
 
   TODO:
   nested for/next loops
@@ -299,7 +286,21 @@
   larger gosub/return stack
   pwm output routines
   posix gpio routines
-  msec posix delays 
+  ctrl-c for posix (arduino already has it) 
   goto/gosub to a variable
+  arduino 'tone' function
+  
+
+  *****                     *****
+  ***** Version Information *****
+  *****                     *****
+  ver 0.55  DELAY(msec) works for posix now too
+  ver 0.54  added an editor, string variables
+  ver 0.53  allow user to select directory in dir command
+  ver 0.52	change size of basic ram for arduino, 
+  remove \n from run at start, added cls command
+  ver 0.51	2E5 and 2e5 equiv (linetolower() caused issue)
+  ver 0.50  moved from alpha to beta, released to the wild 
+
 
 
