@@ -160,36 +160,36 @@
 
   *** Commands ***
   run [linenumber]  	Start running the basic program. All variables are cleared.
-  						If linenumber is given then no variables are cleared. The 
-						basic program starts running from the given line.
+  			If linenumber is given then no variables are cleared. The 
+			basic program starts running from the given line.
 
-  list					Display the basic program in memory.
+  list			Display the basic program in memory.
 
   cls                   Clear the display
 
-  size/mem				Show free (unused) memory.
+  size/mem		Show free (unused) memory.
 
-  *load [filename]		Load the file 'filename' into memory clearing out any 
-  						prior code.
+  *load [filename]	Load the file 'filename' into memory clearing out any 
+  			prior code.
   
-  *save [filename]		Save the program in memory to 'filename'.
+  *save [filename]	Save the program in memory to 'filename'.
 
-  *dir [dirname]		Show a directory of files in the given directory. Default
+  *dir [dirname]	Show a directory of files in the given directory. Default
                         directory is /. ex: dir /basic/
 
-  *flist				List a file on the drive, no change to local memory.
+  *flist		List a file on the drive, no change to local memory.
 
-  **slist				List the program in memory to Serial Port #1 (printer etc).
+  **slist		List the program in memory to Serial Port #1 (printer etc).
 
   *delete               Delete a file
   
-  new					Delete the program currently in memory.
+  new			Delete the program currently in memory.
 
-  exit					Exit the basic interpreter.
+  exit			Exit the basic interpreter.
 
-  trace					Toggle program tracing ON/OFF.
+  trace			Toggle program tracing ON/OFF.
 
-  dump					Show a hex memory dump of the basic file.
+  dump			Show a hex memory dump of the basic file.
 
   edit                  Jump to co-resident line editor. 'exit' to return to basic,
                         'help' to show edit commands while in editor.
@@ -294,6 +294,7 @@
   *****                     *****
   ***** Version Information *****
   *****                     *****
+
   ver 0.55  DELAY(msec) works for posix now too
   ver 0.54  added an editor, string variables
   ver 0.53  allow user to select directory in dir command
