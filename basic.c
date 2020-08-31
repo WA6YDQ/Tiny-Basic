@@ -160,36 +160,36 @@
 
   *** Commands ***
   run [linenumber]  	Start running the basic program. All variables are cleared.
-  						If linenumber is given then no variables are cleared. The 
-						basic program starts running from the given line.
+  			If linenumber is given then no variables are cleared. The 
+			basic program starts running from the given line.
 
-  list					Display the basic program in memory.
+  list			Display the basic program in memory.
 
   cls                   Clear the display
 
-  size/mem				Show free (unused) memory.
+  size/mem		Show free (unused) memory.
 
-  *load [filename]		Load the file 'filename' into memory clearing out any 
-  						prior code.
+  *load [filename]	Load the file 'filename' into memory clearing out any 
+  			prior code.
   
-  *save [filename]		Save the program in memory to 'filename'.
+  *save [filename]	Save the program in memory to 'filename'.
 
-  *dir [dirname]		Show a directory of files in the given directory. Default
+  *dir [dirname]	Show a directory of files in the given directory. Default
                         directory is /. ex: dir /basic/
 
-  *flist				List a file on the drive, no change to local memory.
+  *flist		List a file on the drive, no change to local memory.
 
-  **slist				List the program in memory to Serial Port #1 (printer etc).
+  **slist		List the program in memory to Serial Port #1 (printer etc).
 
   *delete               Delete a file
   
-  new					Delete the program currently in memory.
+  new			Delete the program currently in memory.
 
-  exit					Exit the basic interpreter.
+  exit			Exit the basic interpreter.
 
-  trace					Toggle program tracing ON/OFF.
+  trace			Toggle program tracing ON/OFF.
 
-  dump					Show a hex memory dump of the basic file.
+  dump			Show a hex memory dump of the basic file.
 
   edit                  Jump to co-resident line editor. 'exit' to return to basic,
                         'help' to show edit commands while in editor.
@@ -294,6 +294,7 @@
   *****                     *****
   ***** Version Information *****
   *****                     *****
+  ver 0.56  minor mod to list(), added 8080 emulator (command i80)
   ver 0.55  DELAY(msec) works for posix now too
   ver 0.54  added an editor, string variables
   ver 0.53  allow user to select directory in dir command
@@ -303,7 +304,6 @@
   ver 0.50  moved from alpha to beta, released to the wild 
 
 */
-
 
 /* !!!!!!!!!! NOTE NOTE NOTE NOTE NOTE !!!!!!!!!!! */
 /* how are we coding this? (choose posix/arduino) */
@@ -315,7 +315,7 @@
 
 // No #define's below this point need to be touched. 
 
-//#define dueMini     // you won't need this for basic
+#define dueMini     // you won't need this for basic or edit
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -662,6 +662,8 @@ int n;
 char line[MAXLINE]={}, linenum[32]={};
 char *p;
 
+basicLoop:  // when external programs exit, jump back here to restart things
+
 	/* basic program is stored in ram */
 	buffer = (unsigned char *)malloc(BUFSIZE);
 	if (buffer == NULL) {
@@ -869,6 +871,18 @@ char *p;
 			prout("\r\n");	// in case print terminated with ;
 			continue;
 		}
+
+        #ifdef dueMini
+        if (strncmp(line,"i80",3)==0) { // 8080 emulator
+            // free up used memory
+            free(buffer);
+            position = 0;
+            i80();      // jump to 8080 emulator
+            // restore memory, reset pointers
+            goto basicLoop;
+        }
+        #endif
+
 
 		/* if the 1st character of a line isn't a number, show an error */
 		if (!(isdigit(line[0]))) {
@@ -1099,7 +1113,7 @@ char cmd[20]={};
 	p=buffer;
 	int cnt=0;
     sscanf(line,"%s ",cmd); // see what command we're running
-  
+    if (position <1) return;
 	prout("\n\r");
 	while (cnt++ < position) {
 		// list

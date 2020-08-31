@@ -294,7 +294,7 @@
   *****                     *****
   ***** Version Information *****
   *****                     *****
-
+  ver 0.56  minor mod to list(), added 8080 emulator (command i80)
   ver 0.55  DELAY(msec) works for posix now too
   ver 0.54  added an editor, string variables
   ver 0.53  allow user to select directory in dir command
@@ -302,6 +302,4 @@
   remove \n from run at start, added cls command
   ver 0.51	2E5 and 2e5 equiv (linetolower() caused issue)
   ver 0.50  moved from alpha to beta, released to the wild 
-
-
 
