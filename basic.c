@@ -315,7 +315,7 @@
 
 // No #define's below this point need to be touched. 
 
-#define dueMini     // you won't need this for basic or edit
+//#define dueMini     // you won't need this for basic or edit
 
 #include <stdio.h>
 #include <stdlib.h>
